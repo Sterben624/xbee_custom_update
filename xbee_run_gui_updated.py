@@ -16,7 +16,12 @@ class XBeeGUI:
         self.timer = None
         self.root.title("XBee Communicator")
         self.communicator = Communicator()
+<<<<<<< HEAD
+        timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        self.log_file_path = str(f"received_messages{timestamp}.txt")
+=======
         self.log_file_path = "received_messages.log"
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
 
         # Port Entry and Connect Button
         self.port_entry = tk.Entry(root, width=50)
@@ -54,16 +59,41 @@ class XBeeGUI:
 
         self.reboot_button = tk.Button(self.move_frame, text="Reboot", height=2, width=15, 
                                         command=self.send_reboot, bg="#FF6347")
+<<<<<<< HEAD
+        self.reboot_button.grid(row=5, column=0, columnspan=3, pady=2)
+
+        self.square_button = tk.Button(self.move_frame, text="Square", height=2, width=15, 
+                                        command=self.send_square, bg="#0ff5f5")
+        self.square_button.grid(row=5, column=2, columnspan=3, pady=2)
+
+        self.return_control_button = tk.Button(self.move_frame, text="Return Control", height=2, width=15, 
+                                        command=self.return_control, bg="#0ff5f5")
+        self.return_control_button.grid(row=5, column=4, columnspan=3, pady=2)
+
+        self.battery_status_entry = tk.Entry(self.move_frame, width=20)
+        self.battery_status_entry.grid(row=6, column=2, pady=2, padx=5)
+
+        self.battery_status_button = tk.Button(self.move_frame, text="Battery Status", height=2, width=15, 
+                                        command=self.battery_status, bg="#0ff573")
+        self.battery_status_button.grid(row=6, column=3, columnspan=3, pady=2)
+=======
         self.reboot_button.grid(row=5, column=0, columnspan=5, pady=2)
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
 
         # Ensure the grid configuration allows for resizing
         root.grid_columnconfigure(0, weight=1, uniform="equal")
         root.grid_columnconfigure(1, weight=1, uniform="equal")
         root.grid_columnconfigure(2, weight=2, uniform="equal")  # Wider column for output
 
+<<<<<<< HEAD
+        if not os.path.exists(self.log_file_path):
+            with open(self.log_file_path, "a") as log_file:
+                log_file.write("\n\n---------Start logging---------\n")
+=======
         # if not os.path.exists(self.log_file_path):
         with open(self.log_file_path, "a") as log_file:
             log_file.write("\n\n---------Start logging---------\n")
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
 
         self.start_message_receiver()
 
@@ -195,10 +225,17 @@ class XBeeGUI:
 
     def create_adjust_buttons(self, parent, input_field, row, column):
         """Create "-" and "+" buttons under a specific input field."""
+<<<<<<< HEAD
+        minus_button = tk.Button(parent, text="-", width=4, command=lambda: self.adjust_input(input_field, -25))
+        minus_button.grid(row=row, column=column, sticky="w", padx=(5, 0), pady=2)
+
+        plus_button = tk.Button(parent, text="+", width=4, command=lambda: self.adjust_input(input_field, 25))
+=======
         minus_button = tk.Button(parent, text="-", width=4, command=lambda: self.adjust_input(input_field, -50))
         minus_button.grid(row=row, column=column, sticky="w", padx=(5, 0), pady=2)
 
         plus_button = tk.Button(parent, text="+", width=4, command=lambda: self.adjust_input(input_field, 50))
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
         plus_button.grid(row=row, column=column, sticky="e", padx=(0, 5), pady=2)
 
     def connect_device(self):
@@ -229,8 +266,13 @@ class XBeeGUI:
             input_field.insert(0, "0")
 
     def reset_inputs(self):
+<<<<<<< HEAD
+        # self.power_input.delete(0, tk.END)
+        # self.power_input.insert(0, "1500")
+=======
         self.power_input.delete(0, tk.END)
         self.power_input.insert(0, "1500")
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
 
         self.pitch_input.delete(0, tk.END)
         self.pitch_input.insert(0, "1500")
@@ -290,10 +332,28 @@ class XBeeGUI:
         except ValueError:
             self.append_output("Error: Invalid input in move fields. Please enter valid integers.")
 
+<<<<<<< HEAD
+    def send_square(self):
+        self.communicator.send("square,0")
+        self.append_output(f"Sent command: square,0")       
+
+=======
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
     def send_reboot(self):
         self.communicator.send("reboot,0")
         self.append_output(f"Sent command: reboot,0")
 
+<<<<<<< HEAD
+    def return_control(self):
+        self.communicator.send("returnControl,0")
+        self.append_output(f"Sent command: returnControl,0")
+
+    def battery_status(self):
+        self.communicator.send("takeoff,0")
+        self.append_output(f"Sent command: takeoff,0")
+
+=======
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
     def append_output(self, message):
         self.output_area.config(state='normal')
         self.output_area.insert(tk.END, message + "\n")
@@ -312,7 +372,22 @@ class XBeeGUI:
                 data = json.loads(message)
                 text = data["msg"]
                 self.append_output(f"Received message: {text}")
+<<<<<<< HEAD
+                self.log_message(text)
+                # Check for battery voltage message
+                if text.startswith("BATT "):
+                    parts = text.split()
+                    if len(parts) >= 2 and parts[1].endswith("V"):
+                        voltage = parts[1][:-1]  # Remove trailing 'V'
+                        self.battery_status_entry.delete(0, tk.END)
+                        self.battery_status_entry.insert(0, voltage)
+                # Check for battery status error
+                if text.strip() == "BATTERY_STATUS: Error":
+                    self.battery_status_entry.delete(0, tk.END)
+                    self.battery_status_entry.insert(0, "ERROR")
+=======
                 # self.log_message(text)
+>>>>>>> 4ace2313a24e4d281afdb57419e299c223bd0a72
             except queue.Empty:
                 continue
 
