@@ -7,7 +7,8 @@ This project is a small extension of the original library, designed to facilitat
 ```
 xbee/
 ├── list_ports.py                  # Serial 
-├── xbee_for_import_minimal.py     # Core XBee  
+├── xbee_for_import_minimal.py     # Core XBee
+├── xbee_run_console.py            # Console    
 └── xbee_run_gui_updated.py        # GUI 
 ```
 
