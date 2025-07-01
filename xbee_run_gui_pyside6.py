@@ -2,7 +2,6 @@ import sys
 import json
 import threading
 import queue
-import os
 import time
 import serial.tools.list_ports
 from PySide6.QtWidgets import (
@@ -11,7 +10,38 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal, QObject
 from xbee_for_import import Communicator
-import winsound
+import os
+import platform
+try:
+    import winsound
+except ImportError:
+    winsound = None
+
+def cross_platform_beep(frequency=1000, duration=100):
+    """Play a beep sound on Windows and Ubuntu"""
+    try:
+        if platform.system() == "Windows" and winsound:
+            winsound.Beep(frequency, duration)
+        elif platform.system() == "Linux":
+            # Try multiple methods for Linux
+            duration_sec = duration / 1000.0
+            
+            # Method 1: pactl (PulseAudio) - most reliable on modern Ubuntu
+            if os.system("which pactl > /dev/null 2>&1") == 0:
+                os.system(f"pactl upload-sample /usr/share/sounds/alsa/Front_Left.wav beep-sample > /dev/null 2>&1")
+                os.system("pactl play-sample beep-sample > /dev/null 2>&1")
+            # Method 2: speaker-test
+            elif os.system("which speaker-test > /dev/null 2>&1") == 0:
+                os.system(f"timeout {duration_sec}s speaker-test -t sine -f {frequency} > /dev/null 2>&1")
+            # Method 3: ASCII bell (terminal bell)
+            else:
+                print('\a', end='', flush=True)
+        else:
+            # Fallback for other systems (macOS, etc.)
+            print('\a', end='', flush=True)
+    except Exception:
+        # Final fallback - ASCII bell
+        print('\a', end='', flush=True)
 
 class CommunicatorSignals(QObject):
     message_received = Signal(str)
@@ -308,11 +338,7 @@ class XBeeGUIPySide(QMainWindow):
             self.battery_status_entry.setText("ERROR")
         # Play beep if "I'm alive" message received
         if text.startswith("I'm alive"):
-            try:
-                winsound.Beep(1000, 100)
-            except ImportError:
-                pass
-
+            cross_platform_beep(1000, 100)
 
     def log_message(self, message):
         """Log a message to the log file with a timestamp."""
