@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal, QObject
 from xbee_for_import import Communicator
+import winsound
 
 class CommunicatorSignals(QObject):
     message_received = Signal(str)
@@ -269,6 +270,12 @@ class XBeeGUIPySide(QMainWindow):
                 self.battery_status_entry.setText(voltage)
         if text.strip() == "BATTERY_STATUS: Error":
             self.battery_status_entry.setText("ERROR")
+        # Play beep if "I'm alive" message received
+        if text.startswith("I'm alive"):
+            try:
+                winsound.Beep(1000, 100)
+            except ImportError:
+                pass
 
     def log_message(self, message):
         try:
