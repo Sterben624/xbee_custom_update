@@ -8,6 +8,7 @@ from tkinter import ttk
 import os
 import time
 import serial.tools.list_ports
+import winsound
 
 class XBeeGUI:
     def __init__(self, root):
@@ -352,6 +353,8 @@ class XBeeGUI:
                 if text.strip() == "BATTERY_STATUS: Error":
                     self.battery_status_entry.delete(0, tk.END)
                     self.battery_status_entry.insert(0, "ERROR")
+                if text.startswith("I'm alive"):
+                    winsound.Beep(1000, 100)
             except queue.Empty:
                 continue
 
