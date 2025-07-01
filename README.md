@@ -17,6 +17,7 @@ xbee/
 - digi-xbee >= 1.4.0
 - pyserial >= 3.5
 - tkinter (included with Python)
+- PySide6 (using in xbee_run_gui_pyside6.py)
 
 ## Quick Start
 1. **Install Dependencies**
