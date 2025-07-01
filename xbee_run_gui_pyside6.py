@@ -7,7 +7,7 @@ import time
 import serial.tools.list_ports
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QPushButton, QLineEdit, QTextEdit, QLabel, QGroupBox, QFrame
+    QPushButton, QLineEdit, QTextEdit, QLabel, QGroupBox
 )
 from PySide6.QtCore import Qt, Signal, QObject
 from xbee_for_import import Communicator
@@ -153,7 +153,9 @@ class XBeeGUIPySide(QMainWindow):
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
 
+
     def connect_device(self):
+        """Connect to the device using the specified port."""
         port = self.port_entry.text()
         try:
             if port:
@@ -164,12 +166,16 @@ class XBeeGUIPySide(QMainWindow):
         except Exception as e:
             self.append_output(f"Error connecting to device: {str(e)}")
 
+
     def list_devices(self):
+        """List available devices."""
         devices = self.communicator.list_devices()
         device_list = "Devices found:\n" + "\n".join(devices)
         self.append_output(device_list)
 
+
     def adjust_input(self, input_field, delta):
+        """Adjust the value in the input field by delta."""
         try:
             current_value = int(input_field.text()) if input_field.text() else 0
             new_value = max(0, current_value + delta)
@@ -177,12 +183,16 @@ class XBeeGUIPySide(QMainWindow):
         except ValueError:
             input_field.setText("0")
 
+
     def reset_inputs(self):
+        """Reset movement input fields to default values."""
         self.pitch_input.setText("1500")
         self.roll_input.setText("1500")
         self.yaw_input.setText("1500")
 
+
     def send_arm_disarm(self, state):
+        """Send arm or disarm command."""
         if state == 0:
             self.communicator.send("arm,0")
             self.append_output("Sent command: arm,0")
@@ -190,11 +200,15 @@ class XBeeGUIPySide(QMainWindow):
             self.communicator.send("arm,1")
             self.append_output("Sent command: arm,1")
 
+
     def send_land(self):
+        """Send land command."""
         self.communicator.send("land,1")
         self.append_output("Sent command: land,1")
 
+
     def send_takeoff(self):
+        """Send takeoff command with specified altitude."""
         altitude = self.takeoff_input.text()
         if altitude.isdigit():
             self.communicator.send(f"takeoff,{altitude}")
@@ -202,7 +216,9 @@ class XBeeGUIPySide(QMainWindow):
         else:
             self.append_output("Enter a numeric value.")
 
+
     def send_set_height(self):
+        """Send set height command."""
         height = self.set_height_input.text()
         if height:
             self.communicator.send(f"setHeight,{height}")
@@ -210,11 +226,15 @@ class XBeeGUIPySide(QMainWindow):
         else:
             self.append_output("Enter setHeight value!")
 
+
     def send_mode(self, mode):
+        """Send mode change command."""
         self.communicator.send(f"mode,{mode}")
         self.append_output(f"Sent command: mode,{mode}")
 
+
     def send_move(self):
+        """Send move command with current input values."""
         try:
             power = int(self.power_input.text()) if self.power_input.text().isdigit() else 0
             pitch = int(self.pitch_input.text()) if self.pitch_input.text().isdigit() else 0
@@ -226,31 +246,45 @@ class XBeeGUIPySide(QMainWindow):
         except ValueError:
             self.append_output("Error: Invalid input in move fields. Please enter valid integers.")
 
+
     def send_square(self):
+        """Send square command."""
         self.communicator.send("square,0")
         self.append_output("Sent command: square,0")
 
+
     def send_reboot(self):
+        """Send reboot command."""
         self.communicator.send("reboot,0")
         self.append_output("Sent command: reboot,0")
 
+
     def return_control(self):
+        """Send return control command."""
         self.communicator.send("returnControl,0")
         self.append_output("Sent command: returnControl,0")
 
+
     def battery_status(self):
+        """Send battery status command."""
         self.communicator.send("takeoff,0")
         self.append_output("Sent command: takeoff,0")
 
+
     def append_output(self, message):
+        """Append a message to the output area and log it."""
         self.output_area.append(message)
         self.log_message(message)
 
+
     def start_message_receiver(self):
+        """Start the background thread for receiving messages."""
         self.message_receiver_thread = threading.Thread(target=self.update_received_messages, daemon=True)
         self.message_receiver_thread.start()
 
+
     def update_received_messages(self):
+        """Thread target: poll for new messages and emit signal to GUI."""
         while True:
             try:
                 message = self.communicator.message_queue.get(timeout=1)
@@ -260,7 +294,9 @@ class XBeeGUIPySide(QMainWindow):
             except queue.Empty:
                 continue
 
+
     def handle_received_message(self, text):
+        """Handle a message received from the communicator thread."""
         self.append_output(f"Received message: {text}")
         # Check for battery voltage message
         if text.startswith("BATT "):
@@ -277,7 +313,9 @@ class XBeeGUIPySide(QMainWindow):
             except ImportError:
                 pass
 
+
     def log_message(self, message):
+        """Log a message to the log file with a timestamp."""
         try:
             with open(self.log_file_path, "a") as log_file:
                 timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -285,7 +323,9 @@ class XBeeGUIPySide(QMainWindow):
         except Exception as e:
             print(f"Error writing to log file: {e}")
 
+
     def list_serial_ports(self):
+        """List available serial ports."""
         ports = serial.tools.list_ports.comports()
         if ports:
             self.append_output("Available serial ports:")
