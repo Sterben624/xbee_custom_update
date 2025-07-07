@@ -1,3 +1,4 @@
 received_messages*
 __pycache__/
 .venv/
+log/
