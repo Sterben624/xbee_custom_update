@@ -195,6 +195,12 @@ class XBeeGUIPySide(QMainWindow):
                 self.append_output("No port entered.")
         except Exception as e:
             self.append_output(f"Error connecting to device: {str(e)}")
+            # Check if running in WSL and suggest usbipd command
+            if 'WSL_DISTRO_NAME' in os.environ:
+                self.append_output("Troubleshooting steps:")
+                self.append_output("- Windows: usbipd attach --wsl --busid 1-2") 
+                self.append_output("- WSL: ls /dev/ttyUSB* (should show device)")
+                self.append_output("- WSL: sudo chmod 666 /dev/ttyUSB* (if permission denied)")
 
 
     def list_devices(self):
