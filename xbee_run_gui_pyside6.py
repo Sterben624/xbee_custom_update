@@ -4,6 +4,7 @@ import threading
 import queue
 import time
 import serial.tools.list_ports
+import logging
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QPushButton, QLineEdit, QTextEdit, QLabel, QGroupBox
@@ -51,15 +52,30 @@ class XBeeGUIPySide(QMainWindow):
         super().__init__()
         self.setWindowTitle("XBee Communicator")
         self.communicator = Communicator()
-        timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        self.log_file_path = f"received_messages{timestamp}.txt"
+        self.setup_logging()
         self.signals = CommunicatorSignals()
         self.signals.message_received.connect(self.handle_received_message)
         self.init_ui()
-        if not os.path.exists(self.log_file_path):
-            with open(self.log_file_path, "a") as log_file:
-                log_file.write("\n\n---------Start logging---------\n")
+        self.logger.info("XBee Communicator started")
         self.start_message_receiver()
+
+    def setup_logging(self):
+        """Setup logging configuration to write to log directory."""
+        os.makedirs("log", exist_ok=True)
+        timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        log_filename = f"log/xbee_communicator_{timestamp}.log"
+        
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler(log_filename),
+                logging.StreamHandler()
+            ]
+        )
+        
+        self.logger = logging.getLogger('XBeeGUI')
+        self.logger.info(f"Logging initialized - log file: {log_filename}")
 
     def init_ui(self):
         main_widget = QWidget()
@@ -189,12 +205,16 @@ class XBeeGUIPySide(QMainWindow):
         port = self.port_entry.text()
         try:
             if port:
+                self.logger.info(f"Attempting to connect to device on port: {port}")
                 self.communicator.connect(port)
                 self.append_output(f"Connected to device on port: {port}")
+                self.logger.info(f"Successfully connected to device on port: {port}")
             else:
                 self.append_output("No port entered.")
+                self.logger.warning("Connection attempt failed - no port entered")
         except Exception as e:
             self.append_output(f"Error connecting to device: {str(e)}")
+            self.logger.error(f"Connection failed on port {port}: {str(e)}")
             # Check if running in WSL and suggest usbipd command
             if 'WSL_DISTRO_NAME' in os.environ:
                 self.append_output("Troubleshooting steps:")
@@ -347,11 +367,9 @@ class XBeeGUIPySide(QMainWindow):
             cross_platform_beep(1000, 100)
 
     def log_message(self, message):
-        """Log a message to the log file with a timestamp."""
+        """Log a message using the configured logger."""
         try:
-            with open(self.log_file_path, "a") as log_file:
-                timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-                log_file.write(f"{timestamp}-> {message}\n")
+            self.logger.info(message)
         except Exception as e:
             print(f"Error writing to log file: {e}")
 
